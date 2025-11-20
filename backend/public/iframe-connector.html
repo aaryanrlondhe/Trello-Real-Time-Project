@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Trello Real-time Power-Up Connector</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+    <script>
+        // Initialize the Power-Up
+        TrelloPowerUp.initialize({
+            'board-buttons': function(t, options) {
+                return [{
+                    icon: 'https://cdn.glitch.com/1b42d7fe-bda8-4af8-a6c8-eff0cea9e08a%2Frocket-ship.png?1494946700421',
+                    text: 'Real-time Sync',
+                    callback: function(t) {
+                        return t.popup({
+                            title: 'Real-time Sync Status',
+                            url: './sync-status.html',
+                            height: 200
+                        });
+                    }
+                }];
+            },
+            
+            'card-buttons': function(t, options) {
+                return [{
+                    icon: 'https://cdn.glitch.com/1b42d7fe-bda8-4af8-a6c8-eff0cea9e08a%2Frefresh.png?1494946700421',
+                    text: 'Sync Status',
+                    callback: function(t) {
+                        return t.popup({
+                            title: 'Card Sync Status',
+                            url: './card-status.html',
+                            height: 150
+                        });
+                    }
+                }];
+            }
+        });
+        
+        console.log('Trello Real-time Power-Up initialized');
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "TRELLO_API_KEY": "@trello_api_key",
+    "TRELLO_API_TOKEN": "@trello_api_token",
+    "CORS_ORIGIN": "@cors_origin",
+    "PORT": "3000"
+  }
+}

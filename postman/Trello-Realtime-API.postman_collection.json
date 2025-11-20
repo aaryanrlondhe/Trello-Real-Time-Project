@@ -1,0 +1,617 @@
+{
+  "info": {
+    "name": "Trello Real-time API",
+    "description": "API collection for testing the Trello Real-time WebSocket application. This collection tests all four required endpoints:\n\n1. POST /api/boards - Create new board\n2. POST /api/tasks - Create new card/task\n3. PUT /api/tasks/:cardId - Update existing card/task\n4. DELETE /api/tasks/:cardId - Delete card/task\n\nAdditional endpoints for webhook management and board operations are also included.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "trello-realtime-api-collection",
+    "updatedAt": "2025-11-17T00:00:00.000Z"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has status field\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('status');",
+              "    pm.expect(responseJson.status).to.equal('OK');",
+              "});",
+              "",
+              "pm.test(\"Response time is less than 1000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        },
+        "description": "Health check endpoint to verify the server is running"
+      },
+      "response": []
+    },
+    {
+      "name": "1. Create Board (Required)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has board data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('name');",
+              "});",
+              "",
+              "pm.test(\"Board has expected name\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson.data.name).to.include('Test Board');",
+              "});",
+              "",
+              "// Save board ID for subsequent requests",
+              "const responseJson = pm.response.json();",
+              "if (responseJson.success && responseJson.data && responseJson.data.id) {",
+              "    pm.collectionVariables.set('BOARD_ID', responseJson.data.id);",
+              "    console.log('Board ID saved:', responseJson.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Hiring Test Board - {{$timestamp}}\",\n  \"defaultLists\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/boards",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "boards"]
+        },
+        "description": "Required Endpoint #4: Create a new Trello board with default lists"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Board Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has board data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('name');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/boards/{{BOARD_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "boards", "{{BOARD_ID}}"]
+        },
+        "description": "Get board details including lists and cards"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Board Lists",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has lists array\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.be.an('array');",
+              "});",
+              "",
+              "// Save first list ID for task creation",
+              "const responseJson = pm.response.json();",
+              "if (responseJson.success && responseJson.data && responseJson.data.length > 0) {",
+              "    pm.collectionVariables.set('LIST_ID', responseJson.data[0].id);",
+              "    console.log('List ID saved:', responseJson.data[0].id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/boards/{{BOARD_ID}}/lists",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "boards", "{{BOARD_ID}}", "lists"]
+        },
+        "description": "Get all lists for the created board"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create Task (Required)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has task data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('name');",
+              "    pm.expect(responseJson.data).to.have.property('desc');",
+              "});",
+              "",
+              "pm.test(\"Task has expected content\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson.data.name).to.include('Test Task');",
+              "    pm.expect(responseJson.data.desc).to.include('API testing');",
+              "});",
+              "",
+              "// Save card ID for subsequent operations",
+              "const responseJson = pm.response.json();",
+              "if (responseJson.success && responseJson.data && responseJson.data.id) {",
+              "    pm.collectionVariables.set('CARD_ID', responseJson.data.id);",
+              "    console.log('Card ID saved:', responseJson.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"boardId\": \"{{BOARD_ID}}\",\n  \"listId\": \"{{LIST_ID}}\",\n  \"name\": \"Test Task - {{$timestamp}}\",\n  \"desc\": \"This is a test task created via API testing to verify the real-time functionality.\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks"]
+        },
+        "description": "Required Endpoint #1: Create a new task/card in the specified list"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Task Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has task data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('name');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks/{{CARD_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks", "{{CARD_ID}}"]
+        },
+        "description": "Get details of the created task"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Update Task (Required)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has updated task data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('name');",
+              "});",
+              "",
+              "pm.test(\"Task was updated correctly\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson.data.name).to.include('UPDATED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"UPDATED Test Task - {{$timestamp}}\",\n  \"desc\": \"This task has been updated via API to test the real-time update functionality. Updated at {{$timestamp}}.\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks/{{CARD_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks", "{{CARD_ID}}"]
+        },
+        "description": "Required Endpoint #2: Update an existing task/card"
+      },
+      "response": []
+    },
+    {
+      "name": "Create Second Task for Testing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// Save second card ID",
+              "const responseJson = pm.response.json();",
+              "if (responseJson.success && responseJson.data && responseJson.data.id) {",
+              "    pm.collectionVariables.set('CARD_ID_2', responseJson.data.id);",
+              "    console.log('Second Card ID saved:', responseJson.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"boardId\": \"{{BOARD_ID}}\",\n  \"listId\": \"{{LIST_ID}}\",\n  \"name\": \"Second Test Task - {{$timestamp}}\",\n  \"desc\": \"This is a second test task for demonstration purposes.\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks"]
+        },
+        "description": "Create a second task for deletion testing"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Delete Task (Required)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response confirms deletion\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('message');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks/{{CARD_ID_2}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks", "{{CARD_ID_2}}"]
+        },
+        "description": "Required Endpoint #3: Delete/archive a task/card"
+      },
+      "response": []
+    },
+    {
+      "name": "List Webhooks",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has webhooks array\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/webhooks",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "webhooks"]
+        },
+        "description": "List all registered webhooks"
+      },
+      "response": []
+    },
+    {
+      "name": "Register Webhook",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has webhook data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "    pm.expect(responseJson.data).to.have.property('callbackURL');",
+              "});",
+              "",
+              "// Save webhook ID for cleanup",
+              "const responseJson = pm.response.json();",
+              "if (responseJson.success && responseJson.data && responseJson.data.id) {",
+              "    pm.collectionVariables.set('WEBHOOK_ID', responseJson.data.id);",
+              "    console.log('Webhook ID saved:', responseJson.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"callbackURL\": \"{{WEBHOOK_URL}}/api/webhooks/trello\",\n  \"modelId\": \"{{BOARD_ID}}\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/webhooks/register",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "webhooks", "register"]
+        },
+        "description": "Register a webhook for real-time updates"
+      },
+      "response": []
+    },
+    {
+      "name": "Test Error Handling - Invalid Board ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500 (expected for invalid board)\", function () {",
+              "    pm.response.to.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response has error message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/boards/invalid-board-id",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "boards", "invalid-board-id"]
+        },
+        "description": "Test error handling with invalid board ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Test Error Handling - Missing Task Data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400 (bad request)\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Response has validation error\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/tasks",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "tasks"]
+        },
+        "description": "Test validation with missing required task data"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set timestamp for unique names",
+          "pm.globals.set('timestamp', Date.now());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test to check response time",
+          "pm.test(\"Response time is acceptable\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL for the API server"
+    },
+    {
+      "key": "WEBHOOK_URL",
+      "value": "https://your-ngrok-url.ngrok.io",
+      "type": "string",
+      "description": "Public URL for webhook callbacks (replace with your ngrok URL)"
+    },
+    {
+      "key": "BOARD_ID",
+      "value": "",
+      "type": "string",
+      "description": "Board ID (set automatically by Create Board request)"
+    },
+    {
+      "key": "LIST_ID",
+      "value": "",
+      "type": "string",
+      "description": "List ID (set automatically by Get Board Lists request)"
+    },
+    {
+      "key": "CARD_ID",
+      "value": "",
+      "type": "string",
+      "description": "Card ID (set automatically by Create Task request)"
+    },
+    {
+      "key": "CARD_ID_2",
+      "value": "",
+      "type": "string",
+      "description": "Second Card ID for deletion testing"
+    },
+    {
+      "key": "WEBHOOK_ID",
+      "value": "",
+      "type": "string",
+      "description": "Webhook ID (set automatically by Register Webhook request)"
+    }
+  ]
+}

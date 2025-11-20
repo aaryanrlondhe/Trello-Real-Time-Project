@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "projects": [
+    {
+      "name": "trello-backend",
+      "src": "backend",
+      "rootDirectory": "backend"
+    },
+    {
+      "name": "trello-frontend",
+      "src": "frontend",
+      "rootDirectory": "frontend"
+    }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "env": {
+    "NODE_ENV": "production",
+    "TRELLO_API_KEY": "@trello_api_key",
+    "TRELLO_API_TOKEN": "@trello_api_token",
+    "CORS_ORIGIN": "@cors_origin"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "trello-realtime-assignment",
+  "version": "1.0.0",
+  "description": "Trello Real-time WebSockets + API Frontend Assignment - Complete project with React frontend and Node.js backend",
+  "main": "start-dev.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "dev": "node start-dev.js",
+    "start": "node start-dev.js",
+    "install-all": "npm run setup",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm start",
+    "test-api": "echo 'Import the Postman collection from postman/ directory to test the API'",
+    "register-webhook": "cd backend && node scripts/register-webhook.js",
+    "list-webhooks": "cd backend && node scripts/list-webhooks.js",
+    "delete-webhook": "cd backend && node scripts/delete-webhook.js",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd backend && npm install",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd .."
+  },
+  "keywords": [
+    "trello",
+    "websockets",
+    "react",
+    "nodejs", 
+    "realtime",
+    "api",
+    "socket.io"
+  ],
+  "author": "Assignment Project",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/trello-realtime-assignment.git"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
