@@ -1,0 +1,7 @@
+[build]
+command = "npm run build:frontend"
+publish = "frontend/build"
+
+[build.environment]
+CI = "false"
+REACT_APP_API_URL = "http://localhost:5001"
